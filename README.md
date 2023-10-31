@@ -4,7 +4,7 @@
 - The P4 programs run on [BMv2](https://github.com/p4lang/behavioral-model) virtual switches.
 - It has been experimented over 5G network
 
-<img src=img/monitoring-5g.jpg width=600px>
+<img src=img/monitoring-5g.png width=600px>
 
 - It has been used to monitor [L4S](https://datatracker.ietf.org/doc/draft-ietf-tsvwg-l4s-arch) P4-based [switches](https://ieeexplore.ieee.org/document/9631539).
 
