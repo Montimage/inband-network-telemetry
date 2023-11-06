@@ -23,7 +23,7 @@ To compile `switch-int.p4`, run:
 p4c --target bmv2 --arch v1model switch-int.p4
 ```
 
-The output is `switch-int.json` file which can now be used by BMv2 switch. For example, run the command below to create a switch which bounds its ports 1, 2 to the NICs `eth0`, `eth1` respectively, and it sends INT reports to the collector via `eth3`:
+The output is `switch-int.json` file which can now be used by BMv2 switch. For example, run the command below to create a switch which bounds its ports 1, 2 to the NICs `eth0`, `eth1` respectively, and it uses `eth3` to send INT reports to the collector:
 
 ```bash
 sudo simple_switch -i 1@eth0 -i 2@eth1 -i 3@eth3 switch-int.json
