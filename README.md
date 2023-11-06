@@ -2,7 +2,7 @@
 
 - This repository contains an implementaion a monitoring system by using [In-band Network Telemetry](https://p4.org/p4-spec/docs/INT_v2_1.pdf) and [P4](https://p4.org) language.
 - The P4 programs run on [BMv2](https://github.com/p4lang/behavioral-model) virtual switches.
-- It has been experimented over 5G network
+- It has been experimented over a 5G network simulator (ongoing: over 5G air interface)
 
 <img src=img/monitoring-5g.png width=600px>
 
