@@ -33,12 +33,14 @@ sudo simple_switch -i 1@eth0 -i 2@eth1 -i 3@eth3 switch-int.json
 # Configuration
 
 - Enable INT:
+  
 ```bash
 cat "table_add tb_int_config_transit set_transit => 1" | simple_switch_CLI
 ```
 
 - Configure source node to perform INT only on the packets which have `ip-src`, `port-src`, `ip-dst`, `port-dst`:
-``bash
+  
+```bash
 cat "table_add tb_int_config_source set_source ip-src port-src ip-dst port-dst => max-hop hop-metadata-length instruction-mask
 ```
 
@@ -48,6 +50,7 @@ in which:
    + `instruction-mask`: which information (metric to be collected at each hop) must added to the packet
 
 For example:
+
 ```bash
 cat "table_add tb_int_config_source set_source 10.0.1.11&&&0xFFFFFF00 5001&&&0x0000 10.0.0.11&&&0xFFFFFFFF 5001&&&0x0000 => 4 10 0xFFFF" | simple_switch_CLI
 ```
