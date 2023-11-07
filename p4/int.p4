@@ -901,7 +901,10 @@ action int_l4s_drop(inout int_metadata meta){
 
 action int_l4s_set_mark_probability( inout int_metadata meta, bit<33> prob ){
    log_msg("==L4S mark probability");
-   
+}
+
+action int_mark_packets(in int_metadata meta, in bit<16> val){
+	l4s_stat_register.write( L4S_MARK_INDEX + meta.stat_l4s_index, val );
 }
 #endif
 
