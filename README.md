@@ -35,13 +35,13 @@ sudo simple_switch -i 1@eth0 -i 2@eth1 -i 3@eth3 switch-int.json
 - Enable INT:
   
 ```bash
-cat "table_add tb_int_config_transit set_transit => 1" | simple_switch_CLI
+echo "table_add tb_int_config_transit set_transit => 1" | simple_switch_CLI
 ```
 
 - Configure source node to perform INT only on the packets which have `ip-src`, `port-src`, `ip-dst`, `port-dst`:
   
 ```bash
-cat "table_add tb_int_config_source set_source ip-src port-src ip-dst port-dst => max-hop hop-metadata-length instruction-mask
+echo "table_add tb_int_config_source set_source ip-src port-src ip-dst port-dst => max-hop hop-metadata-length instruction-mask
 ```
 
 in which:
@@ -52,15 +52,15 @@ in which:
 For example:
 
 ```bash
-cat "table_add tb_int_config_source set_source 10.0.1.11&&&0xFFFFFF00 5001&&&0x0000 10.0.0.11&&&0xFFFFFFFF 5001&&&0x0000 => 4 10 0xFFFF" | simple_switch_CLI
+echo "table_add tb_int_config_source set_source 10.0.1.11&&&0xFFFFFF00 5001&&&0x0000 10.0.0.11&&&0xFFFFFFFF 5001&&&0x0000 => 4 10 0xFFFF" | simple_switch_CLI
 ```
 to collect all available metric from `10.0.1.x:5001` to `10.0.0.11:5001`. The IPs and ports are given together with their mask to present a rang of IPs or port numbers.
 
 - Configure sink node using this syntax: `mirroring_add <mirror-id> <egress-port>`:
 
 ```bash
-# cat "table_add tb_int_config_sink set_sink 1 => 3" | simple_switch_CLI
-cat "mirroring_add 1 3" | simple_switch_CLI
+# echo "table_add tb_int_config_sink set_sink 1 => 3" | simple_switch_CLI
+echo "mirroring_add 1 3" | simple_switch_CLI
 ```
 
 
