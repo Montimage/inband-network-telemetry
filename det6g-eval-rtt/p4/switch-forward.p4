@@ -32,6 +32,31 @@ header ipv4_t {
    ip4Addr_t dstAddr;
 }
 
+header tcp_t{
+   bit<16> srcPort;
+   bit<16> dstPort;
+   bit<32> seqNo;
+   bit<32> ackNo;
+   bit<4>  dataOffset;
+   bit<4>  res;
+   bit<1>  cwr;
+   bit<1>  ece;
+   bit<1>  urg;
+   bit<1>  ack;
+   bit<1>  psh;
+   bit<1>  rst;
+   bit<1>  syn;
+   bit<1>  fin;
+   bit<16> window;
+   bit<16> checksum;
+   bit<16> urgentPtr;
+}
+
+#define MAX_TCP_OPTION_WORD 10
+header tcp_option_t{
+   bit<32> data;
+}
+
 
 struct metadata {
    /* empty */
@@ -40,6 +65,8 @@ struct metadata {
 struct headers {
    ethernet_t  ethernet;
    ipv4_t      ipv4;
+   tcp_t       tcp;
+   tcp_option_t[MAX_TCP_OPTION_WORD] tcp_opt;
 }
 
 /*************************************************************************
@@ -67,7 +94,34 @@ parser MyParser(packet_in packet,
    }
    state parse_ipv4 {
       packet.extract(hdr.ipv4);
-      transition accept;
+      transition select(hdr.ipv4.protocol){
+         0x006  : parse_tcp;
+         default: accept;
+      }
+   }
+   
+   state parse_tcp {
+      packet.extract(hdr.tcp);
+
+      //HN: jump over TCP options
+      tcp_opt_cnt = hdr.tcp.dataOffset;
+      //exclude 5 words ( = 20 bytes) of the fixed tcp header that is defined in tcp_t
+      if( tcp_opt_cnt > 5 )
+         tcp_opt_cnt = tcp_opt_cnt - 5;
+      else
+         tcp_opt_cnt = 0;
+
+      transition select( tcp_opt_cnt ){
+         default : parse_tcp_option;
+      }
+   }
+   
+   state parse_tcp_option {
+      packet.extract( hdr.tcp_opt.next );
+      tcp_opt_cnt = tcp_opt_cnt - 1;
+      transition select( tcp_opt_cnt ){
+         default: parse_tcp_option;
+      }
    }
 }
 
@@ -87,36 +141,6 @@ control MyVerifyChecksum(inout headers hdr, inout metadata meta) {
 control MyIngress(inout headers hdr,
       inout metadata meta,
       inout standard_metadata_t standard_metadata) {
-   //clear Ethernet
-   action invalid_ethernet() {
-      hdr.ethernet.setInvalid();
-   }
-
-   //add Ethernet
-   action update_ethernet(egressSpec_t port, macAddr_t srcAddr, macAddr_t dstAddr) {
-      standard_metadata.egress_spec = port;
-      //update Ethernet
-      hdr.ethernet.setValid();
-      hdr.ethernet.srcAddr   = srcAddr;
-      hdr.ethernet.dstAddr   = dstAddr;
-      hdr.ethernet.etherType = 0x800; //IPv4
-      
-      //hdr.ipv4.ttl = hdr.ipv4.ttl - 1;
-
-   }
-
-   table port_forward {
-      key = {
-         standard_metadata.ingress_port: exact;
-      }
-      actions = {
-         update_ethernet;
-         invalid_ethernet;
-         NoAction;
-      }
-      size = 256;
-      default_action = invalid_ethernet();
-   }
 
    apply {
       log_msg("new packet comming from port = {}", {standard_metadata.ingress_port});
@@ -128,12 +152,20 @@ control MyIngress(inout headers hdr,
         log_msg("mac_src: {}, mac_dst: {}", {hdr.ethernet.srcAddr, hdr.ethernet.dstAddr});
         //drop broadcast
         if(hdr.ethernet.dstAddr != 1 && hdr.ethernet.dstAddr != 2 ){
-          log_msg(" dopped packet");
+          log_msg(" ==> dopped broadcast packet");
           mark_to_drop(standard_metadata);
           return;
         }
       }
-
+      log_msg("ip_src: {}, ip_dst: {}", {hdr.ipv4.srcAddr, hdr.ipv4.dstAddr} );
+      
+      //somehow UERANSIM sends out RST packets
+      // these packets cause our client & server reseting their connection
+      // => drop these packet
+      if( hdr.tcp.rst == 1 && hdr.ipv4.srcAddr == 170721290 ){
+         log_msg( " ==> drop reset");
+         mark_to_drop(standard_metadata);
+      }
       //port_forward.apply();
    }
 }
@@ -149,17 +181,15 @@ control MyEgress(inout headers hdr,
 
       if ( standard_metadata.egress_port ==  2 ){
         hdr.ethernet.setValid();
-        hdr.ethernet.srcAddr = 1;
+        hdr.ethernet.srcAddr = 1; //src & dst MAC are fixed
         hdr.ethernet.dstAddr = 2;
         hdr.ethernet.etherType = 0x800; //IPv4
+        //hdr.ipv4.dstAddr = 170721290;
+        //
       } else {
+        //hdr.ipv4.srcAddr = 170721290;
         hdr.ethernet.setInvalid();
       }
-
-      //hdr.ipv4.srcAddr = hdr.ipv4.dstAddr;
-      //log_msg( "ingress port: {}, egress port: {}", {standard_metadata.ingress_port, standard_metadata.egress_port});
-      //log_msg("ip_dst: {}", {hdr.ipv4.dstAddr} );
-      
    }
 }
 
@@ -196,6 +226,8 @@ control MyDeparser(packet_out packet, in headers hdr) {
    apply {
       packet.emit(hdr.ethernet);
       packet.emit(hdr.ipv4);
+      packet.emit(hdr.tcp);
+      packet.emit(hdr.tcp_opt);
    }
 }
 

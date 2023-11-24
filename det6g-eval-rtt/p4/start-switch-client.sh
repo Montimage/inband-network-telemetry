@@ -10,7 +10,7 @@ NS="client"
 VETH="veth-$NS"
 
 sudo ip link del "$VETH"
-sudo ip link del veth1
+#sudo ip link del veth1
 sudo ip netns del "$NS"
 sudo ip netns add "$NS"
 
@@ -37,7 +37,10 @@ sudo ip netns exec "$NS" ip link set veth1 up
 sudo ip netns exec "$NS" ip route add 0.0.0.0/0 dev veth1
 sudo ip netns exec "$NS" arp -s 1.1.1.1 00:00:00:00:00:01
 
-DEBUG="--log-level info --pcap=./ --log-console"
-DEBUG=""
+#DEBUG="--log-level info --pcap=./ --log-console"
+#DEBUG=""
 # start BMv2 switch
 sudo simple_switch -i 1@uesimtun0 -i 2@"$VETH"  --thrift-port 9092 $DEBUG --device-id 2  "$P4_FILE_PREFIX".json
+
+echo start client
+sudo ip netns exec client ../client-server/client 1.1.1.1 5000
