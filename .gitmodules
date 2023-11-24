@@ -1,0 +1,3 @@
+[submodule "det6g-eval-rtt/ueransim/software"]
+	path = det6g-eval-rtt/ueransim/software
+	url = https://github.com/aligungr/UERANSIM.git
