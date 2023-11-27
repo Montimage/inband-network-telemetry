@@ -25,9 +25,10 @@ sudo ip link set dev "$VETH" address 00:00:00:00:00:01
 sudo ip link set dev   veth1 address 00:00:00:00:00:02
 
 # config a NIC
-#sudo ip address add 10.0.2.10/24 dev "$VETH"
-sudo sysctl net.ipv6.conf.$VETH.disable_ipv6=1
-sudo ip link set dev "$VETH" up
+# put this end into "ran" namespace so that we can communicate with UE
+sudo ip link set "$VETH" netns ran
+sudo ip netns exec ran sysctl net.ipv6.conf.$VETH.disable_ipv6=1
+sudo ip netns exec ran ip link set dev "$VETH" up
 
 # move a NIC to the $NS namespace
 sudo ip link set veth1 netns "$NS"
@@ -40,7 +41,7 @@ sudo ip netns exec "$NS" arp -s 1.1.1.1 00:00:00:00:00:01
 #DEBUG="--log-level info --pcap=./ --log-console"
 #DEBUG=""
 # start BMv2 switch
-sudo simple_switch -i 1@uesimtun0 -i 2@"$VETH"  --thrift-port 9092 $DEBUG --device-id 2  "$P4_FILE_PREFIX".json
+exec sudo ip netns exec ran simple_switch -i 1@uesimtun0 -i 2@"$VETH"  --thrift-port 9092 $DEBUG --device-id 2  "$P4_FILE_PREFIX".json
 
-echo start client
-sudo ip netns exec client ../client-server/client 1.1.1.1 5000
+#echo start client
+#sudo ip netns exec client ../client-server/client 1.1.1.1 5000

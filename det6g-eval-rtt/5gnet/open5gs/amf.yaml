@@ -474,7 +474,7 @@ amf:
       - addr: 127.0.0.5
         port: 7777
     ngap:
-      - addr: 172.50.0.1
+      - addr: 192.168.10.1
     metrics:
       - addr: 127.0.0.5
         port: 9090

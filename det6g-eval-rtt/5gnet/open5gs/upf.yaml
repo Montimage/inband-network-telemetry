@@ -198,7 +198,7 @@ upf:
     pfcp:
       - addr: 127.0.0.7
     gtpu:
-      - addr: 172.50.0.1
+      - addr: 192.168.10.1
     subnet:
       - addr: 10.45.0.1/16
       - addr: 2001:db8:cafe::1/48

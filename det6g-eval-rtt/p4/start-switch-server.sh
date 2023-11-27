@@ -41,8 +41,8 @@ sudo ip netns exec "$NS" arp -s 10.45.0.10 00:00:00:00:00:01
 #DEBUG="--log-level info --pcap=./ --log-console"
 #DEBUG=""
 # start BMv2 switch
-sudo simple_switch -i 1@ogstun -i 2@"$VETH"  --thrift-port 9091 $DEBUG --device-id 1  "$P4_FILE_PREFIX".json &
+exec sudo simple_switch -i 1@ogstun -i 2@"$VETH"  --thrift-port 9091 $DEBUG --device-id 1  "$P4_FILE_PREFIX".json
 
-sleep 5
-echo start server
-sudo ip netns exec server ../client-server/server 5000
+#sleep 5
+#echo start server
+#sudo ip netns exec server ../client-server/server 5000
