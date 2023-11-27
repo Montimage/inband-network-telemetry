@@ -17,7 +17,7 @@
 #include <sys/time.h>
 
 #define NB_ITERATION 10000
-#define BUFSIZE 1000
+#define BUFSIZE 200
 
 /*
  * error - wrapper for perror
