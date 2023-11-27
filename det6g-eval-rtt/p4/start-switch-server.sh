@@ -33,7 +33,7 @@ sudo ip link set dev "$VETH" up
 # move a NIC to the $NS namespace
 sudo ip link set veth1 netns "$NS"
 
-sudo ip netns exec "$NS" ip address add 1.1.1.1/24 dev veth1
+sudo ip netns exec "$NS" ip address add 192.168.100.1/24 dev veth1
 sudo ip netns exec "$NS" ip link set veth1 up
 sudo ip netns exec "$NS" ip route add 0.0.0.0/0 dev veth1
 sudo ip netns exec "$NS" arp -s 10.45.0.10 00:00:00:00:00:01

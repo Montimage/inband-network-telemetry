@@ -36,7 +36,7 @@ sudo ip link set veth1 netns "$NS"
 sudo ip netns exec "$NS" ip address add 10.45.0.10/24 dev veth1
 sudo ip netns exec "$NS" ip link set veth1 up
 sudo ip netns exec "$NS" ip route add 0.0.0.0/0 dev veth1
-sudo ip netns exec "$NS" arp -s 1.1.1.1 00:00:00:00:00:01
+sudo ip netns exec "$NS" arp -s 192.168.100.1 00:00:00:00:00:01
 
 #DEBUG="--log-level info --pcap=./ --log-console"
 #DEBUG=""
