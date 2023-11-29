@@ -55,14 +55,14 @@ function config_int(){
 	# echo "table_add tb_int_config_sink set_sink 1 => 3" | simple_switch_CLI
 	echo "mirroring_add 1 3" | conf_switch
 	echo
-	echo "P4 switch is ready"
+	echo "P4 switch is ready at server side"
 	echo
 }
 
 (sleep 3 && config_int )&
 DEBUG="--log-level info --pcap=./ --log-console"
 DEBUG="--log-level error --log-console"
-#DEBUG=""
+DEBUG=""
 # start BMv2 switch
 exec sudo simple_switch -i 1@ogstun -i 2@"$VETH" -i 3@int-mon  --thrift-port 9091 $DEBUG --device-id 1  "$P4_FILE_PREFIX".json
 

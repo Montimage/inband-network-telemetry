@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
 
 		latencies += get_latency( i,  (struct timeval *) buf );
 
-		usleep(10);
+		usleep(10000);
 	}
 	close(socket_fd);
 	printf("avg latency: %ld", latencies / NB_ITERATION );

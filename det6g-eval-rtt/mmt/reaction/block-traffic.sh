@@ -29,7 +29,16 @@ function conf_switch(){
 
 
 echo $IPs
-#clear space
-#IP=$(echo "${IP//[$'\t\r\n']}")
-# syntax: table_add <table-name> <key-1> <key-2> ... => <val-1> <val-2>
-echo "table_add tb_blocklist source $IPs => 1" | tee -a /tmp/block-traffic.log | conf_switch | tee -a /tmp/block-traffic.log
+
+# read IPs into an array
+IFS="," read -ra IP_ARR <<<"$IPs"
+for IP in "${IP_ARR[@]}"
+do
+	
+	#clear space
+	IP=$(echo $IP | sed -r 's/ //g')
+	
+	# syntax: table_add <table-name> <key-1> <key-2> ... => <val-1> <val-2>
+
+	echo "table_add tb_blocklist source $IP => 1" | tee -a /tmp/block-traffic.log | conf_switch | tee -a /tmp/block-traffic.log
+done

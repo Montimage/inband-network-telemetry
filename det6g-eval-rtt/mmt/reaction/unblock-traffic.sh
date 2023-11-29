@@ -10,7 +10,7 @@ echo "$@" >> /tmp/unblock-traffic.log
 IPs=$2
 
 function conf_switch(){
-	sudo ip netns exec ran simple_switch_CLI --thrift-port 9092
+	simple_switch_CLI --thrift-port 9092
 }
 
 
