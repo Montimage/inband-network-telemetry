@@ -8,14 +8,16 @@ This rule detects whether the variation of packet latency between 2 observation 
 
 - as we have 2 P4 switches, at INT-collector we obtain T1 and T2 for each packet. The latency of the packet between these 2 switches is L = T1-T2 (Note: L is not an absolute time value as T1 and T2 are measured by 2 different local clocks)
 
-- for all packets in a time window of a TCP session, if the difference between their L values is greater than a given threshold, then an alert will be raised.
+- for all packets in a time window of a TCP session, if the difference between their L values is greater than 100 microsecond, then an alert will be raised.
    + this verification is applied only for packets at a given time window
    + time window is 1 millisecond
    + as network state might be different at different time window, then packet latency can be also involved
 
+Note: the threshold of 100 microsecond and the time window of 1 millisecond are just given as example. They are configurable by modifying them in the XML rule.
+
 Assumption: the frequency of clocks at the two P4 switches is constant. This assumption ensures that the latency values L1 and L2 of two packets are comparable. 
 
-Explanation:
+Explanation of XML rule:
 
 - event 1: first packet
    + (ip.src != ip.dst): the packet is not sent to its source
@@ -33,11 +35,14 @@ Note:
 
 
 
-<property value="THEN" delay_units="ms" delay_min="0" delay_max="2" property_id="1" type_property="ATTACK" description="Latency variation of packets of the same TCP session must less than 100ns if they are in a time window of 1ms">
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="1" property_id="2" type_property="ATTACK" description="Latency variation of packets of the same TCP session must less than 100ns if they are in a time window of 1ms">
 	<event value="COMPUTE" event_id="1" description="First packet"
 		boolean_expression="((ip.src != ip.dst) &amp;&amp;(int.num_hop == 2))"/>
+
 	<event value="COMPUTE" event_id="2" description="Second packet"
-		boolean_expression="((#is_same_session(ip.src.1, ip.dst.1, tcp.src_port.1, tcp.dest_port.1, ip.src, ip.dst, tcp.src_port, tcp.dest_port) &amp;&amp; (int.num_hop == 2)) &amp;&amp; (#latency_variation(int.hop_ingress_times.1, int.hop_ingress_times) > 100)) "/>
+		boolean_expression="((#is_same_session(ip.src.1, ip.dst.1, tcp.src_port.1, tcp.dest_port.1, ip.src, ip.dst, tcp.src_port, tcp.dest_port) 
+			&amp;&amp; (int.num_hop == 2)) 
+			&amp;&amp; (#latency_variation(int.hop_ingress_times.1, int.hop_ingress_times) > 100)) "/>
 </property>
 
 <embedded_functions><![CDATA[
@@ -57,7 +62,8 @@ static inline int64_t get_latency(const void *a){
 	if( hop_ingress_times->len < 2 )
 		return 0;
 	//get the difference of timestamps between 2 hops
-	return (hop_ingress_times->data[0] - hop_ingress_times->data[1]);
+	// need to divide to 1000 to get microsecond from nanosecond
+	return (hop_ingress_times->data[0] - hop_ingress_times->data[1]) / 1000;
 }
 
 static inline uint64_t latency_variation(const void *a, const void *b){
